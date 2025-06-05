@@ -1,0 +1,2 @@
+$group-id-type-choice /= tagged-uuid-type
+;$group-id-type-choice /= tagged-bytes

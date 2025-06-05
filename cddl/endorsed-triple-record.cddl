@@ -1,0 +1,4 @@
+endorsed-triple-record = [
+  condition: environment-map
+  endorsement: [ + measurement-map ]
+]
