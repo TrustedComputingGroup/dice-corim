@@ -1,0 +1,4 @@
+conditional-endorsement-series-triple-record = [
+  condition: stateful-environment-record
+  series: [ + conditional-series-record ]
+]

@@ -1,0 +1,4 @@
+reference-triple-record = [
+  ref-env: environment-map
+  ref-claims: [ + measurement-map ]
+]

@@ -1,0 +1,20 @@
+measurement-values-map = non-empty<{
+  ? &(version: 0) => version-map
+  ? &(svn: 1) => svn-type-choice
+  ? &(digests: 2) => digests-type
+  ? &(flags: 3) => flags-map
+  ? (
+      &(raw-value: 4) => $raw-value-type-choice,
+      ? &(raw-value-mask-DEPRECATED: 5) => raw-value-mask-type
+    )
+  ? &(mac-addr: 6) => mac-addr-type-choice
+  ? &(ip-addr: 7) =>  ip-addr-type-choice
+  ? &(serial-number: 8) => text
+  ? &(ueid: 9) => ueid-type
+  ? &(uuid: 10) => uuid-type
+  ? &(name: 11) => text
+  ;? &(cryptokeys: 13) => [ + $crypto-key-type-choice ]
+  ;? &(integrity-registers: 14) => integrity-registers
+  ;? &(raw-int: 15) => raw-int-type-choice
+  * $$measurement-values-map-extension
+}>

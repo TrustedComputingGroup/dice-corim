@@ -1,0 +1,4 @@
+stateful-environment-record = [
+  environment: environment-map,
+  claims-list: [ + measurement-map ]
+]
