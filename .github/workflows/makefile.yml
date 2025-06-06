@@ -23,4 +23,4 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         files: |
-          ./exports/*.cddl
+          ./cddl/exports/*.cddl
