@@ -3,6 +3,11 @@
 SHELL := /bin/bash
 
 include tools.mk
+include funcs.mk
+
+DC_DIR := ./
+#IMPORTS_DIR := $(DC_DIR)imports/
+EXPORTS_DIR := $(DC_DIR)exports/
 
 %.cbor: %.diag
 	$(diag2cbor) $< > $@
@@ -10,37 +15,8 @@ include tools.mk
 check:: cbor-tags-unique
 check:: check-corim check-corim-examples
 check:: check-comid check-comid-examples
-check:: check-cotl check-cotl-examples
-
-# $1: label
-# $2: cddl fragments
-# $3: diag test files
-define cddl_check_template
-
-check-$(1): $(1)-autogen.cddl
-	$$(cddl) $$< g 1 | $$(diag2diag) -e
-
-.PHONY: check-$(1)
-
-$(1)-autogen.cddl: $(2)
-	for f in $$^ ; do ( grep -v '^;' $$$$f ; echo ) ; done > $$@
-
-CLEANFILES += $(1)-autogen.cddl
-
-check-$(1)-examples: $(1)-autogen.cddl $(3:.diag=.cbor)
-	@for f in $(3:.diag=.cbor); do \
-		echo ">> validating $$$$f against $$<" ; \
-		$$(cddl) $$< validate $$$$f &>/dev/null || exit 1 ; \
-		echo ">> saving prettified CBOR to $$$${f%.cbor}.pretty" ; \
-		$$(cbor2pretty) $$$$f > $$$${f%.cbor}.pretty ; \
-	done
-
-.PHONY: check-$(1)-examples
-
-CLEANFILES += $(3:.diag=.cbor)
-CLEANFILES += $(3:.diag=.pretty)
-
-endef # cddl_check_template
+#check:: check-cotl check-cotl-examples
+check:: export-all
 
 # Commented since CI doesn't have openssl
 examples/sig-structure.diag: examples/sig-structure.diag.tmpl examples/payload-corim-4.diag examples/protected-header-map.diag
@@ -61,10 +37,11 @@ examples/corim-4.diag: examples/corim-4.sig examples/corim-4.diag.tmpl examples/
 	envsubst < examples/corim-4.diag.tmpl > examples/corim-4.diag
 
 include corim-frags.mk
-
-$(eval $(call cddl_check_template,comid,$(COMID_FRAGS),$(COMID_EXAMPLES)))
-$(eval $(call cddl_check_template,cotl,$(COTL_FRAGS),$(COTL_EXAMPLES)))
-$(eval $(call cddl_check_template,corim,$(CORIM_FRAGS),$(CORIM_EXAMPLES)))
+COMID_START := concise-mid-tag
+CORIM_START := tagged-corim-map
+$(eval $(call cddl_check_template,comid,$(COMID_FRAGS),$(COMID_EXAMPLES),$(COMID_START)))
+#$(eval $(call cddl_check_template,cotl,$(COTL_FRAGS),$(COTL_EXAMPLES)))
+$(eval $(call cddl_check_template,corim,$(CORIM_FRAGS),$(CORIM_EXAMPLES),$(CORIM_START)))
 
 GITHUB := https://raw.githubusercontent.com/
 COSWID_REPO := sacmwg/draft-ietf-sacm-coswid/master
@@ -73,6 +50,17 @@ COSWID_REPO_URL := $(join $(GITHUB), $(COSWID_REPO))
 concise-swid-tag.cddl: ; $(curl) -O $(COSWID_REPO_URL)/$@
 
 CLEANFILES += concise-swid-tag.cddl
+
+# Make exports - used by cddl-releases
+IMPORT_FRAGS := concise-swid-tag.cddl
+$(eval $(call cddl_exp_template,dice-corim,$(CORIM_FRAGS),$(EXPORTS_DIR),$(IMPORT_FRAGS)))
+AUTOGEN_FRAGS := $(addprefix $(DC_DIR), corim-autogen.cddl)
+AUTOGEN_EXPORTS := $(addprefix $(EXPORTS_DIR), corim-autogen.cddl)
+
+export-all: exp-dice-corim check-corim check-comid
+	cp $(AUTOGEN_FRAGS) $(EXPORTS_DIR)
+
+CLEANFILES += $(AUTOGEN_EXPORTS)
 
 clean: ; rm -f $(CLEANFILES)
 
