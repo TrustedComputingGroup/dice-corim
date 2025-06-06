@@ -1,0 +1,79 @@
+# Render the spec to PDF and Word on pull requests and releases, attaching the
+# outputs to the pull request / release, as appropriate.
+
+name: Render spec
+
+on:
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/trustedcomputinggroup/pandoc:0.10.2
+    name: Render PDF
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Cache LaTeX files
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-latex-files
+        with:
+          path: |
+            *.aux
+            *.fdb_latexmk
+            *.lof
+            *.lot
+            *.toc
+            *.convert.pdf
+          key: latex-${{ github.run_id }}
+          restore-keys: latex
+
+      - name: Render
+        uses: trustedcomputinggroup/markdown@v0.4.2
+        with:
+          input-md: spec.tcg
+          extra-build-options: "--versioned_filenames"
+          output-pdf: spec.pdf
+          output-docx: spec.docx
+
+      - name: Upload PDF to PR
+        uses: actions/upload-artifact@master
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: PDF
+          path: spec.*.pdf
+
+      - name: Upload Word to PR
+        uses: actions/upload-artifact@master
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: Word
+          path: spec.*.docx
+
+      - name: Upload PDF to release
+        uses: svenstaro/upload-release-action@v2
+        if: ${{ github.event_name == 'release' }}
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: spec.*.pdf
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+
+      - name: Upload Word to release
+        uses: svenstaro/upload-release-action@v2
+        if: ${{ github.event_name == 'release' }}
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: spec.*.docx
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
