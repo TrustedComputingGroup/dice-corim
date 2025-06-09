@@ -39,9 +39,9 @@ examples/corim-4.diag: examples/corim-4.sig examples/corim-4.diag.tmpl examples/
 include corim-frags.mk
 COMID_START := concise-mid-tag
 CORIM_START := tagged-corim-map
-$(eval $(call cddl_check_template,comid,$(COMID_FRAGS),$(COMID_EXAMPLES),$(COMID_START)))
+$(eval $(call cddl_check_template,comid,$(COMID_FRAGS) $(IMPORT_FRAGS),$(COMID_EXAMPLES),$(COMID_START)))
 #$(eval $(call cddl_check_template,cotl,$(COTL_FRAGS),$(COTL_EXAMPLES)))
-$(eval $(call cddl_check_template,corim,$(CORIM_FRAGS),$(CORIM_EXAMPLES),$(CORIM_START)))
+$(eval $(call cddl_check_template,corim,$(CORIM_FRAGS) $(IMPORT_FRAGS),$(CORIM_EXAMPLES),$(CORIM_START)))
 
 GITHUB := https://raw.githubusercontent.com/
 COSWID_REPO := sacmwg/draft-ietf-sacm-coswid/master
@@ -52,7 +52,6 @@ concise-swid-tag.cddl: ; $(curl) -O $(COSWID_REPO_URL)/$@
 CLEANFILES += concise-swid-tag.cddl
 
 # Make exports - used by cddl-releases
-IMPORT_FRAGS := concise-swid-tag.cddl
 $(eval $(call cddl_exp_template,dice-corim,$(CORIM_FRAGS),$(EXPORTS_DIR),$(IMPORT_FRAGS)))
 AUTOGEN_FRAGS := $(addprefix $(DC_DIR), corim-autogen.cddl)
 AUTOGEN_EXPORTS := $(addprefix $(EXPORTS_DIR), corim-autogen.cddl)
