@@ -6,3 +6,6 @@ CDDL_DIR := ./cddl/
 
 check:
 	$(MAKE) -C $(CDDL_DIR)
+
+clean:
+	$(MAKE) -C $(CDDL_DIR) clean
